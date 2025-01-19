@@ -45,12 +45,12 @@ public class JwtAuthenticationFilter implements GatewayFilter {
                 return response.setComplete();
             }
 
-            final String token = request.getHeaders().getOrEmpty("Authorization").get(0);
+            final String token = request.getHeaders().getOrEmpty("Authorization").getFirst().split(" ")[1];
 
             try {
                 jwtUtil.validateToken(token);
             } catch (JwtTokenMalformedException | JwtTokenMissingException e ) {
-
+                System.out.println(token +"*"+e.toString());
                 ServerHttpResponse response = exchange.getResponse();
                 response.setStatusCode(HttpStatus.BAD_REQUEST);
 

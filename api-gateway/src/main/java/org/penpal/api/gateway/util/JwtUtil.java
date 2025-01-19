@@ -48,6 +48,8 @@ public class JwtUtil {
             throw new JwtTokenMalformedException("Unsupported JWT token");
         } catch (IllegalArgumentException ex) {
             throw new JwtTokenMissingException("JWT claims string is empty.");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -1,7 +1,7 @@
 package org.penpal.invitation.service;
 
-import org.penpal.email.service.dto.EmailSendingPayload;
-import org.penpal.email.service.service.EmailSendingService;
+import org.penpal.email.sending.dto.EmailSendingPayload;
+import org.penpal.email.sending.service.EmailSendingService;
 import org.penpal.invitation.dto.InvitationFilter;
 import org.penpal.invitation.dto.InvitationPayload;
 import org.penpal.invitation.dto.Teacher;
