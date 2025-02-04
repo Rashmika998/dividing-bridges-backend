@@ -25,6 +25,7 @@ public class EmailThread {
     private String subject;
     private List<String> participants;
     private List<Message> messages;
+    private boolean threadRead;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

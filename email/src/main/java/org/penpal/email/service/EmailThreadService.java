@@ -49,6 +49,7 @@ public class EmailThreadService {
         thread.setThreadId(UUID.randomUUID().toString());
         thread.setSubject(subject);
         thread.setParticipants(List.of(sender, recipient));
+        thread.setThreadRead(false);
         List<EmailThread.Message.Attachment> attachedAttachments = null;
         if (attachments != null && !attachments.isEmpty()) {
             attachedAttachments = attachments.stream()
@@ -93,6 +94,15 @@ public class EmailThreadService {
         Optional<EmailThread> thread = emailThreadRepository.findByThreadId(threadId);
         if (thread.isPresent()) {
             return new ResponseEntity<>(thread.get(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(new APIResponse("Thread not found!"), HttpStatus.NOT_FOUND);
+    }
+
+    public ResponseEntity<?> updateThreadReadStatus(String threadId, String threadReadStatus) {
+        Optional<EmailThread> thread = emailThreadRepository.findByThreadId(threadId);
+        if (thread.isPresent()) {
+            thread.get().setThreadRead(Boolean.parseBoolean(threadReadStatus));
+            return new ResponseEntity<EmailThread>(emailThreadRepository.save(thread.get()), HttpStatus.OK);
         }
         return new ResponseEntity<>(new APIResponse("Thread not found!"), HttpStatus.NOT_FOUND);
     }
@@ -156,7 +166,7 @@ public class EmailThreadService {
                         .collect(Collectors.toList());
                 message.setAttachments(attachedAttachments);
             }
-
+            thread.get().setThreadRead(false);
             thread.get().getMessages().add(message);
             thread.get().setUpdatedAt(LocalDateTime.now());
             return new ResponseEntity<EmailThread>(emailThreadRepository.save(thread.get()), HttpStatus.OK);
