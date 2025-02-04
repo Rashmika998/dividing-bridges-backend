@@ -11,4 +11,5 @@ public interface EmailThreadRepository extends MongoRepository<EmailThread, Stri
     List<EmailThread> findByParticipantsContaining(String participant);
     Optional<EmailThread> findByThreadId(String threadId);
     List<EmailThread> findByMessagesSentAtBetween(LocalDateTime start, LocalDateTime end);
+    List<EmailThread> findByReadStatusContaining(String userEmail, boolean isRead);
 }

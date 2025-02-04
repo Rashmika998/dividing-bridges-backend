@@ -48,12 +48,19 @@ public class EmailThreadController {
         return emailThreadService.getThread(threadId);
     }
 
-    @PatchMapping("/{threadId}/read")
+    @GetMapping("/unread/{email}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> getUnreadThreads(@PathVariable("email") String email) {
+        return emailThreadService.getUnreadThreads(email);
+    }
+
+    @PatchMapping("/{threadId}/{email}/read")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> updateThreadReadStatus(
             @PathVariable("threadId") String threadId,
-            @RequestParam("threadReadStatus") String threadReadStatus) {
-        return emailThreadService.updateThreadReadStatus(threadId, threadReadStatus);
+            @PathVariable("email") String email,
+            @RequestParam("threadReadStatus") Boolean threadReadStatus) {
+        return emailThreadService.updateThreadReadStatus(threadId, email, threadReadStatus);
     }
 
     @PostMapping("/{threadId}/add-message")

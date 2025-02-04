@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -25,9 +26,9 @@ public class EmailThread {
     private String subject;
     private List<String> participants;
     private List<Message> messages;
-    private boolean threadRead;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Map<String, Boolean> readStatus;
 
     @Getter
     @Setter

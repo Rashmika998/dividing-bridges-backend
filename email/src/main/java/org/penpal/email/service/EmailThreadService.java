@@ -49,7 +49,12 @@ public class EmailThreadService {
         thread.setThreadId(UUID.randomUUID().toString());
         thread.setSubject(subject);
         thread.setParticipants(List.of(sender, recipient));
-        thread.setThreadRead(false);
+
+        Map<String, Boolean> readStatus = new HashMap<>();
+        readStatus.put(sender, true);
+        readStatus.put(recipient, false);
+        thread.setReadStatus(readStatus);
+
         List<EmailThread.Message.Attachment> attachedAttachments = null;
         if (attachments != null && !attachments.isEmpty()) {
             attachedAttachments = attachments.stream()
@@ -98,15 +103,27 @@ public class EmailThreadService {
         return new ResponseEntity<>(new APIResponse("Thread not found!"), HttpStatus.NOT_FOUND);
     }
 
-    public ResponseEntity<?> updateThreadReadStatus(String threadId, String threadReadStatus) {
-        Optional<EmailThread> thread = emailThreadRepository.findByThreadId(threadId);
-        if (thread.isPresent()) {
-            thread.get().setThreadRead(Boolean.parseBoolean(threadReadStatus));
-            return new ResponseEntity<EmailThread>(emailThreadRepository.save(thread.get()), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(new APIResponse("Thread not found!"), HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> getUnreadThreads(String userEmail) {
+        return new ResponseEntity<List<EmailThread>>(emailThreadRepository.findByReadStatusContaining(userEmail, false), HttpStatus.OK);
     }
 
+    public ResponseEntity<?> updateThreadReadStatus(String threadId, String userEmail, Boolean readStatus) {
+        Optional<EmailThread> optionalThread = emailThreadRepository.findById(threadId);
+        if (optionalThread.isPresent()) {
+            EmailThread thread = optionalThread.get();
+
+            if (thread.getReadStatus().containsKey(userEmail)) {
+                thread.getReadStatus().put(userEmail, readStatus);
+                thread.setUpdatedAt(LocalDateTime.now());
+                emailThreadRepository.save(thread);
+                return ResponseEntity.ok("Thread marked as read.");
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not a participant in this thread.");
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Thread not found.");
+        }
+    }
 //    public ResponseEntity<?> getAttachments(String threadId, String messageId) {
 //        Optional<EmailThread> thread = emailThreadRepository.findByThreadId(threadId);
 //        if (thread.isPresent()) {
@@ -166,9 +183,15 @@ public class EmailThreadService {
                         .collect(Collectors.toList());
                 message.setAttachments(attachedAttachments);
             }
-            thread.get().setThreadRead(false);
             thread.get().getMessages().add(message);
             thread.get().setUpdatedAt(LocalDateTime.now());
+
+            Map<String, Boolean> participantsMap = new HashMap<>();
+            for (String participant : thread.get().getParticipants()) {
+                participantsMap.put(participant, participant.equals(sender));
+            }
+            thread.get().setReadStatus(participantsMap);
+
             return new ResponseEntity<EmailThread>(emailThreadRepository.save(thread.get()), HttpStatus.OK);
         }
         return new ResponseEntity<>(new APIResponse("Thread not found!"), HttpStatus.NOT_FOUND);
