@@ -114,14 +114,13 @@ public class EmailThreadService {
 
             if (thread.getReadStatus().containsKey(userEmail)) {
                 thread.getReadStatus().put(userEmail, readStatus);
-                thread.setUpdatedAt(LocalDateTime.now());
                 emailThreadRepository.save(thread);
-                return ResponseEntity.ok("Thread marked as read.");
+                return new ResponseEntity<>("Thread marked as read.", HttpStatus.OK);
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not a participant in this thread.");
+                return new ResponseEntity<>(new APIResponse("User is not a participant in this thread."), HttpStatus.BAD_REQUEST);
             }
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Thread not found.");
+            return new ResponseEntity<>(new APIResponse("Thread not found!"), HttpStatus.NOT_FOUND);
         }
     }
 //    public ResponseEntity<?> getAttachments(String threadId, String messageId) {
