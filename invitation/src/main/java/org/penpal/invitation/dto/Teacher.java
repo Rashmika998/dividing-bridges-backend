@@ -11,5 +11,6 @@ public class Teacher {
     private String userEmail;
     private String userFullName;
     private String school;
+    private String district;
     private String assignedClass;
 }
