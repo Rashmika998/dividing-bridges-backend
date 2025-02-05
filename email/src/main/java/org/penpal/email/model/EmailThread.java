@@ -1,9 +1,6 @@
 package org.penpal.email.model;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.penpal.shared.MessageStatus;
 import org.penpal.shared.MessageType;
 import org.springframework.data.annotation.Id;
@@ -28,7 +25,22 @@ public class EmailThread {
     private List<Message> messages;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Map<String, Boolean> readStatus;
+    private List<ParticipantStatus> participantsStatus;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @Data
+    public static class ParticipantStatus {
+        private String email;
+        private Boolean isRead;
+
+        public ParticipantStatus(String email, Boolean isRead) {
+            this.email = email;
+            this.isRead = isRead;
+        }
+    }
+
 
     @Getter
     @Setter

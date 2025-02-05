@@ -50,10 +50,10 @@ public class EmailThreadService {
         thread.setSubject(subject);
         thread.setParticipants(List.of(sender, recipient));
 
-        Map<String, Boolean> readStatus = new HashMap<>();
-        readStatus.put(sender, true);
-        readStatus.put(recipient, false);
-        thread.setReadStatus(readStatus);
+        List<EmailThread.ParticipantStatus> participantsStatus = new ArrayList<>();
+        participantsStatus.add(new EmailThread.ParticipantStatus(sender, true));
+        participantsStatus.add(new EmailThread.ParticipantStatus(recipient, false));
+        thread.setParticipantsStatus(participantsStatus);
 
         List<EmailThread.Message.Attachment> attachedAttachments = null;
         if (attachments != null && !attachments.isEmpty()) {
@@ -104,7 +104,7 @@ public class EmailThreadService {
     }
 
     public ResponseEntity<?> getUnreadThreads(String userEmail) {
-        return new ResponseEntity<List<EmailThread>>(emailThreadRepository.findByReadStatusContaining(userEmail, false), HttpStatus.OK);
+        return new ResponseEntity<List<EmailThread>>(emailThreadRepository.findUnreadThreadsByUserEmail(userEmail, false), HttpStatus.OK);
     }
 
     public ResponseEntity<?> updateThreadReadStatus(String threadId, String userEmail, Boolean readStatus) {
@@ -112,13 +112,21 @@ public class EmailThreadService {
         if (optionalThread.isPresent()) {
             EmailThread thread = optionalThread.get();
 
-            if (thread.getReadStatus().containsKey(userEmail)) {
-                thread.getReadStatus().put(userEmail, readStatus);
-                emailThreadRepository.save(thread);
-                return new ResponseEntity<>("Thread marked as read.", HttpStatus.OK);
-            } else {
+            boolean updated = false;
+            for (EmailThread.ParticipantStatus participant : thread.getParticipantsStatus()) {
+                if (participant.getEmail().equals(userEmail)) {
+                    participant.setIsRead(readStatus);
+                    updated = true;
+                    break;
+                }
+            }
+
+            if (!updated) {
                 return new ResponseEntity<>(new APIResponse("User is not a participant in this thread."), HttpStatus.BAD_REQUEST);
             }
+
+            emailThreadRepository.save(thread);
+            return new ResponseEntity<>("Thread marked as read.", HttpStatus.OK);
         } else {
             return new ResponseEntity<>(new APIResponse("Thread not found!"), HttpStatus.NOT_FOUND);
         }
@@ -185,11 +193,9 @@ public class EmailThreadService {
             thread.get().getMessages().add(message);
             thread.get().setUpdatedAt(LocalDateTime.now());
 
-            Map<String, Boolean> participantsMap = new HashMap<>();
-            for (String participant : thread.get().getParticipants()) {
-                participantsMap.put(participant, participant.equals(sender));
+            for (EmailThread.ParticipantStatus participantStatus : thread.get().getParticipantsStatus()) {
+                participantStatus.setIsRead(participantStatus.getEmail().equals(sender));
             }
-            thread.get().setReadStatus(participantsMap);
 
             return new ResponseEntity<EmailThread>(emailThreadRepository.save(thread.get()), HttpStatus.OK);
         }
