@@ -117,7 +117,7 @@ public class InvitationService {
         newInvitation.setSentAt(LocalDateTime.now());
 
         EmailSendingPayload emailSendingPayload = new EmailSendingPayload();
-        emailSendingPayload.setTo(invitationPayload.getSenderEmail());
+        emailSendingPayload.setTo(invitationPayload.getReceiverEmail());
         emailSendingPayload.setSubject(EmailTemplates.STUDENT_INVITATION_SUBJECT);
         emailSendingPayload.setBody(String.format(
                 EmailTemplates.ADMIN_INVITATION_BODY,
